@@ -1,0 +1,49 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace属性的值为UserDao接口的全限定类名 -->
+<mapper namespace="com.example.jdbc.dao.UserDao">
+
+    <!-- 查询所有用户信息 -->
+    <select id="findAll" resultType="com.example.jdbc.entity.User">
+        select * from use_info
+    </select>
+
+    <!-- 保存用户 -->
+    <insert id="saveUser" parameterType="com.example.jdbc.entity.User">
+        <selectKey keyProperty="id" keyColumn="id" resultType="int" order="AFTER">
+            select last_insert_id()
+        </selectKey>
+        insert into use_info(userName, sex, idNumber,phone,birth,address) value(#{userName}, #{sex}, #{idNumber}, #{phone}, #{birth}, #{address})
+--         insert into use_info (userName, sex, idNumber,phone,birth,address) values (?,?,?,?,?,?)
+    </insert>
+
+    <!-- 根据用户id更新用户信息 -->
+    <update id="updateUser" parameterType="com.example.jdbc.entity.User">
+        update use_info set userName=#{userName},sex=#{sex},idNumber=#{idNumber},phone=#{phone},birth=#{birth},address=#{address} where id=#{id}
+--             set userName=?, sex=?,idNumber=?,phone=?,birth=?,address=? where id=?
+    </update>
+
+    <!-- 根据用户id删除用户 -->
+    <delete id="deleteUser" parameterType="Integer">
+        delete from use_info where id = #{id}
+    </delete>
+
+    <!-- 根据id查询用户 -->
+    <select id="findById" parameterType="Integer" resultType="com.example.jdbc.entity.User">
+        select * from use_info where id=#{id} or birth =#{userName} or userName like concat('%',#{userName},'%')
+    </select>
+
+    <!-- 根据名称模糊查询用户信息 -->
+    <select id="findByName" parameterType="String" resultType="com.example.jdbc.entity.User">
+        select * from use_info where userName like concat('%',#{userName},'%')  or sex=#{userName}
+
+    </select>
+
+    <!-- 根据日期查询用户信息 -->
+    <select id="findByBirth" parameterType="Date" resultType="com.example.jdbc.entity.User">
+        select * from use_info where to_string(birth) =#{userName}
+    </select>
+
+</mapper>

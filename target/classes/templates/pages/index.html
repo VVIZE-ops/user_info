@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+
+    <title>User Information Management System</title>
+    <link rel="stylesheet" type="text/css" href="http://unpkg.com/view-design/dist/styles/iview.css">
+    <script type="text/javascript" src="http://vuejs.org/js/vue.min.js"></script>
+    <script type="text/javascript" src="http://unpkg.com/view-design/dist/iview.min.js"></script>
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+</head>
+<body>
+
+<h1 align="center">User Information Management System</h1>
+<div id="app">
+
+<!--    搜索-->
+    <div class="ui-icon-search" align="left">
+
+        <i-input v-model="keys" search enter-button="Search" placeholder="Enter something..." @on-search="search(keys)" />
+
+    </div>
+
+
+<!--    新增-->
+    <template>
+        <Button type="primary" shape="circle" icon="ios-search"></Button>
+        <Button type="primary"  @click="Delete(ids)" >删除</Button>
+        <Button align="left" type="primary" icon="ios-search" @click="modal2= true" >新增</Button>
+        <Modal
+                v-model="modal2"
+                title="新增"
+                @on-ok="handleSubmit ()"
+                @on-cancel="handleReset()">
+            <Form align="center" ref="formCustom" :model="formCustom"  :label-width="80">
+                <FormItem label="userName" prop="userName">
+                    <Input placeholder="userName" type="text" v-model="formCustom.userName"></Input>
+                </FormItem>
+                <FormItem label="sex" prop="sex">
+                    <Input placeholder="sex：男/女" type="text" v-model="formCustom.sex"></Input>
+                </FormItem>
+                <FormItem label="idNumber" prop="idNumber">
+                    <Input placeholder="idNumber：18位数身份证" type="text" v-model="formCustom.idNumber" ></Input>
+                </FormItem>
+                <FormItem label="phone" prop="phone">
+                    <Input placeholder="phone:11位数手机号" type="text" v-model="formCustom.phone" ></Input>
+                </FormItem>
+                <FormItem label="birth" prop="birth">
+                    <Input placeholder="birth：2021-01-01(必填)" type="text" v-model="formCustom.birth" ></Input>
+                </FormItem>
+                <FormItem label="address" prop="address">
+                    <Input placeholder="address" type="text" v-model="formCustom.address" ></Input>
+                </FormItem>
+            </Form>
+        </Modal>
+    </template>
+
+    <i-table :columns="columns1" :data="data1"  @on-select="select" @on-select-cancel="cacelone" @on-select-all="selectall" @on-select-all-cancel="cacel">
+<!--        修改-->
+
+        <template  slot-scope="{ row, index }" slot="action">
+            <Button type="primary" size="small" style="margin-right: 5px" @click="show(index)">查看</Button>
+            <Button id = "btn" type="error" size="small" @click="remove(row)">删除</Button>
+            <Button type="primary" size="small" @click="openWindow(row)">修改</Button>
+        </template>
+    </i-table>
+
+    <Modal
+            v-model="modal1"
+            title="修改"
+            @on-ok="update()"
+            @on-cancel="handleReset('formCustom1')">
+        <Form align="center" ref="formCustom1" :model="formCustom1"  :label-width="80">
+            <FormItem label="userName" prop="userName">
+                <Input placeholder="userName" type="text" v-model="formCustom1.userName"></Input>
+            </FormItem>
+            <FormItem label="sex" prop="sex">
+                <Input placeholder="sex：男/女" type="text" v-model="formCustom1.sex"></Input>
+            </FormItem>
+            <FormItem label="idNumber" prop="idNumber">
+                <Input placeholder="idNumber" type="text" v-model="formCustom1.idNumber" ></Input>
+            </FormItem>
+            <FormItem label="phone" prop="phone">
+                <Input placeholder="phone" type="text" v-model="formCustom1.phone" ></Input>
+            </FormItem>
+            <FormItem label="birth" prop="birth">
+                <Input placeholder="birth：2021-01-01(必填)" type="text" v-model="formCustom1.birth" ></Input>
+            </FormItem>
+            <FormItem label="address" prop="address">
+                <Input placeholder="address" type="text" v-model="formCustom1.address" ></Input>
+            </FormItem>
+        </Form>
+    </Modal>
+
+    <!--    <Button type="error" size="small" @click="remove(index)">Delete</Button>-->
+<!--    <Button @click="handleSelectAll(true)">Set all selected</Button>-->
+
+<!--    <Page :total="100" ></Page>-->
+</div>
+<script>
+    new Vue({
+        el: '#app',
+        name:'search',
+        data: {
+            columns1: [
+                {
+                    type: 'selection',
+                    width: 60,
+                    align: 'center'
+                },
+                {
+                    title: 'id',
+                    key: 'id'
+                },
+                {
+                    title: 'userName',
+                    key: 'userName'
+                },
+                {
+                    title: 'sex',
+                    key: 'sex'
+                },
+                {
+                    title:'idNumber',
+                    key:'idNumber'
+                },
+                {
+                    title:'phone',
+                    key:'phone'
+                },
+                {
+                    title:'birth',
+                    key:'birth'
+                },
+                {
+                    title:'address',
+                    key:'address'
+                },
+                {
+                    title: 'Action',
+                    slot: 'action',
+                    width: 150,
+                    align: 'center'
+                }
+            ],
+            data1: [
+            ],
+            formCustom: {
+                userName: '',
+                sex: '',
+                idNumber: '',
+                phone:'',
+                birth:'',
+                address:''
+            },
+            formCustom1: {
+                userName: '',
+                sex: '',
+                idNumber: '',
+                phone:'',
+                birth:'',
+                address:'',
+                id:''
+            },
+            formCustom2: {
+                userName: '',
+                sex: '',
+                idNumber: '',
+                phone:'',
+                birth:'',
+                address:''
+            },
+            keys: '',
+            modal1: false,
+            modal2: false,
+            ids:[],
+        },
+        methods: {
+            // handleSelectAll (status) {
+            //     this.$refs.selection.selectAll(status);
+            // },
+            query(){
+                let that = this
+                $.ajax({
+                    // 8.142.131.195
+                    url: "http://localhost:8080/user/findStu",
+                    //dataType: "json",
+                    type: "Get",
+                    success: function (data) {
+                        that.data1 = data
+                    }
+                    // error: function(data) {
+                    //     alert("请求出错");
+                    //     alert(data);
+                    // }
+                });
+            },
+
+            show (index) {
+                this.$Modal.info({
+                    title: 'User Info',
+                    content: `id：${this.data1[index].id}<br>userName：${this.data1[index].userName}<br>sex：${this.data1[index].sex}<br>idNumber：${this.data1[index].idNumber}<br>phone：${this.data1[index].phone}<br>birth：${this.data1[index].birth}<br>address：${this.data1[index].address}`
+                })
+            },
+            remove (row) {
+                let that = this
+                $.ajax({
+                    url: "http://localhost:8080/user/deletes",
+                    //dataType: "json",
+                    type: "Post",
+                    data:{"ids":row.id},
+                    success: function (data) {
+                        that.query();
+                    }
+                    // error: function(data) {
+                    //     alert("请求出错");
+                    //     alert(data);
+                    // }
+                });
+
+            },
+            select(selection){
+
+                selection.forEach((item) => {
+                    if(this.ids.indexOf(item.id)<=-1){
+                        this.ids.push(item.id)
+                    }
+
+                })
+
+                console.log(this.ids);
+            },
+            selectall(selection) {
+                selection.forEach((item) => {
+                    if(this.ids.indexOf(item.id)<=-1){
+                        this.ids.push(item.id)
+                    }
+
+                })
+
+                console.log(this.ids);
+                console.log(selection);
+            },
+            cacelone(selection){
+                this.ids=[]
+                selection.forEach((item) => {
+                    if(this.ids.indexOf(item.id)<=-1){
+                        this.ids.push(item.id)
+                    }
+                })
+                console.log(this.ids);
+                console.log(selection);
+            },
+            cacel(selection){
+                //
+                this.ids=[]
+
+                console.log(this.ids);
+                console.log(selection);
+            },
+            Delete(){
+                let that = this
+                $.ajax({
+                    url: "http://localhost:8080/user/deletes",
+                    //dataType: "json",
+                     type: "post",
+                    data:{"ids":that.ids.join(",")},
+                    success: function (data) {
+                        that.query();
+                    }
+                    // error: function(data) {
+                    //     alert("请求出错");
+                    //     alert(data);
+                    // }
+                });
+
+            },
+            handleSubmit (name) {
+                let that = this
+                $.ajax({
+                    url: "http://localhost:8080/user/insertGetKey",
+                    //dataType: "json",
+                    type: "Post",
+                    data:that.formCustom,
+                    success: function (data) {
+                        // alert(data)
+                        // console.log
+                        // debugger
+                        that.query();
+
+                    }
+                    // error: function(data) {
+                    //     alert("请求出错");
+                    //     alert(data);
+                    // }
+                });
+            },
+            update(name){
+                let that = this
+                $.ajax({
+                    url: "http://localhost:8080/user/update",
+                    // dataType: "json",
+                    type: "post",
+                    data: that.formCustom1,
+                    success: function (data) {
+                        that.query();
+
+                    }
+                    // error: function(data) {
+                    //     alert("请求出错");
+                    //     alert(data);
+                    // }
+                });
+            },
+            handleReset (name) {
+                this.$refs[name].resetFields();
+            },
+            handleEdit (row, index) {
+                debugger
+                this.editloginName = row.loginName;
+                this.editusername = row.username;
+                this.editpassword = row.password;
+                this.editIndex = index;
+            },
+            handleSave (index) {
+                // this.data[index].loginName = this.editloginName;
+                // this.data[index].username = this.editusername;
+                // this.data[index].password = this.editpassword;
+                // this.editIndex = -1;
+            },
+            openWindow(row){
+                this.modal1 = true;
+                this.formCustom1.id =row.id
+            },
+            query1(){
+                let that = this
+                $.ajax({
+                    url: "http://localhost:8080/user/findByKeys",
+                    //dataType: "json",
+                    type: "Get",
+                    data:{'keys':that.keys},
+                    success: function (data) {
+                        that.data1 = data
+                    }
+                    // error: function(data) {
+                    //     alert("请求出错");
+                    //     alert(data);
+                    // }
+                });
+            },
+            search(keys) {
+                let that = this
+                $.ajax({
+                    url: "http://localhost:8080/user/findByKeys",
+                    //dataType: "json",
+                    type: "Get",
+                    data:{'keys':keys},
+                    success: function (data) {
+                        that.query1();
+                        // alert(data)
+                        // debugger
+
+                    }
+                });
+            },
+            register(){
+                console.log(this.$refs.keys.value)
+            },
+            changeIndexPage(i) {
+                // i是分页中当前页的页码
+                this.page.index = i;
+                this.queryUser();
+            },
+            changePageSize(s){
+                // s为页面大小
+                this.page.index = 1;
+                this.page.size = s;
+                this.queryUser();
+            },
+            resetPage() {
+                this.page.index = 1;
+                this.page.size = 10;
+                this.page.total = 0;
+            },
+        },
+            created() {
+            this.query()
+            }
+    })
+</script>
+</body>
+</html>
